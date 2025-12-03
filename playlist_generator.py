@@ -45,6 +45,21 @@ def generate_playlist(df: pd.DataFrame, plan: list, tau: float = 12.0) -> list:
     
     return playlist
 
+def parse_duration(duration_str):
+    """Convert MM:SS string to total seconds."""
+    parts = str(duration_str).split(':')
+    if len(parts) == 2:
+        minutes, seconds = parts
+        return int(minutes) * 60 + int(seconds)
+    return 0
+
+
+def format_duration(total_seconds):
+    """Convert total seconds to MM:SS format."""
+    minutes = total_seconds // 60
+    seconds = total_seconds % 60
+    return f"{minutes}:{seconds:02d}"
+
 
 def main():
     df = pd.read_csv("songs_binned.csv")
@@ -60,12 +75,20 @@ def main():
     
     playlist = generate_playlist(df, plan, tau=12.0)
     
+    # Calculate total duration
+    total_seconds = sum(parse_duration(track['duration']) for track in playlist)
+    total_duration_str = format_duration(total_seconds)
+    
     print("Generated Playlist:")
-    print(f"{'State':<15} {'Song':<45} {'BPM'}")
-    print("-" * 70)
+    print(f"Total Duration: {total_duration_str}")
+    print(f"Number of Songs: {len(playlist)}")
+    print()
+    print(f"{'State':<15} {'Song':<45} {'BPM':<6} {'Duration'}")
+    print("-" * 75)
+    
     for track in playlist:
         song_name = track['name'][:42] + "..." if len(track['name']) > 45 else track['name']
-        print(f"{track['state']:<15} {song_name:<45} {track['bpm']}")
+        print(f"{track['state']:<15} {song_name:<45} {track['bpm']:<6} {track['duration']}")
 
 
 if __name__ == "__main__":

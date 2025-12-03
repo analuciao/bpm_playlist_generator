@@ -15,12 +15,11 @@ STATES = ["warmup", "steady_state", "push_pace", "sprint"]
 
 # Phase-specific transition weights
 PHASE_WEIGHTS = {
-    "warmup": [2.0, 1.2, 0.8, 0.5],
-    "steady_state": [1.0, 2.0, 1.0, 0.8],
-    "push_pace": [0.7, 1.0, 2.0, 1.0],
-    "sprint": [0.5, 0.8, 1.0, 2.5],
+    "warmup":       [3.0, 1.0, 0.8, 0.6],
+    "steady_state": [1.0, 3.0, 1.0, 0.8],
+    "push_pace":    [0.8, 1.0, 3.0, 2.0],
+    "sprint":       [0.6, 0.9, 1.5, 10.0],
 }
-
 
 def compute_bin_centers(df: pd.DataFrame) -> np.ndarray:
     """Compute mean BPM for each state."""
@@ -56,7 +55,7 @@ def build_phase_matrix(P_base: np.ndarray, weights: list) -> np.ndarray:
 
 def simulate_chain(P_seq: list, x0: int = 0) -> list:
     """
-    Simulate time-inhomogeneous Markov chain.
+    Simulate Markov chain.
     P_seq: list of transition matrices
     x0: starting state index
     Returns: list of visited states
