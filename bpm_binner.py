@@ -1,54 +1,58 @@
 # bpm_binner.py
 import pandas as pd
-import numpy as np
-from typing import Tuple, Dict, Optional
 
-#load csv
-songs = pd.read_csv("songs.csv")
+# BPM ranges for workout states
+BINS = {
+    "warmup": (80, 110),
+    "steady_state": (110, 140),
+    "push_pace": (140, 170),
+    "sprint": (170, 1000)
+}
 
-#fixed bin ranges
-warmup = (80, 110)
-steady_state = (110, 140)
-push_pace = (140, 170)
-sprint = (170, 1000)
-
-BIN_ORDER = [
-    ("warmup", warmup),
-    ("steady_state", steady_state),
-    ("push_pace", push_pace),
-    ("sprint", sprint)
-]
-
-def categorize_bpm(bpm):
-    for category, (lower, upper) in BIN_ORDER:
+def categorize_bpm(bpm: float) -> str:
+    """Assign a workout state based on BPM."""
+    for state, (lower, upper) in BINS.items():
         if lower <= bpm < upper:
-            return category
+            return state
     return None
 
-def bin_songs(songs_df: pd.DataFrame, bin_order=BIN_ORDER, id_col: str = "id", bpm_col: str = "bpm") -> Tuple[pd.DataFrame, Dict[str, str]]:
-    df_binned = songs_df.copy()
-    df_binned["state"] = df_binned['bpm'].apply(categorize_bpm)
+def bin_songs(songs_df: pd.DataFrame) -> pd.DataFrame:
+    """Add 'state' column to songs based on BPM."""
+    df = songs_df.copy()
+    df["state"] = df["bpm"].apply(categorize_bpm)
+    return df
 
-    mapping = {str(row["id"]): str(row["state"]) for _, row in df_binned[[id_col, "state"]].iterrows()}
 
-    return df_binned, mapping
+def choose_song_from_bin(songs_df: pd.DataFrame, state: str, used_ids: set):
+    """Select a random unused song from the given state, or fallback to any unused song."""
+    unused = songs_df[~songs_df["id"].isin(used_ids)]
+    
+    # Try to find song in requested state
+    candidates = unused[unused["state"] == state]
+    if not candidates.empty:
+        return candidates.sample(1).iloc[0]
+    
+    # Fallback to any unused song
+    if not unused.empty:
+        return unused.sample(1).iloc[0]
+    
+    return None
+
+
+def main():
+    songs = pd.read_csv("songs.csv")
+    songs_binned = bin_songs(songs)
+    
+    # Print summary by state
+    for state in BINS.keys():
+        state_songs = songs_binned[songs_binned["state"] == state]
+        song_names = state_songs["name"].tolist()
+        
+        print(f"\n{state.upper().replace('_', ' ')}")
+        print(f"Count: {len(state_songs)}")
+        print(f"Songs: {', '.join(song_names)}")
+    
+    songs_binned.to_csv("songs_binned.csv", index=False)
 
 if __name__ == "__main__":
-    try:
-        songs_binned, mapping = bin_songs(songs)
-        print(dict(list(mapping.items())[:10]))
-    except Exception as e:
-        print("Error during binning:", e)
-        raise
-
-    for state in ["warmup", "steady_state", "push_pace", "sprint"]:
-            # Filter songs in this state
-            state_songs = songs_binned[songs_binned["state"] == state]
-            count = len(state_songs)
-            
-            # Get song names
-            song_names = state_songs["name"].tolist()
-            
-            print(f"\n{state.upper().replace('_', ' ')}")
-            print(f"Count: {count}")
-            print(f"Songs: {', '.join(song_names)}")
+    main()
