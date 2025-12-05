@@ -51,7 +51,7 @@ def compute_expected_hitting_times(P, target_state_idx):
     n = P.shape[0]
     
     # Set up linear system (I - P) h = 1, excluding target state
-    # We want to solve: h(i) - sum_j P_ij h(j) = 1
+    # solve: h(i) - sum_j P_ij h(j) = 1
     non_target = [i for i in range(n) if i != target_state_idx]
     
     # Extract submatrix excluding target state

@@ -112,7 +112,7 @@ def main():
     # Fetch audio features and save to CSV
     rapid_api_key = os.getenv("RAPIDAPI_KEY")
     df = fetch_audio_features(sp, rapid_api_key, max_tracks=50)
-    
+
     df.to_csv("songs.csv", index=False)
     print("\nSaved to songs.csv")
 

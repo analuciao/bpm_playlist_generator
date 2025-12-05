@@ -27,4 +27,12 @@ WORKOUTS = {
         ("push_pace", 1),
         ("warmup", 1), 
     ],
+
+    "default": [
+        ("warmup", 2),
+        ("steady_state", 4),
+        ("push_pace", 3),
+        ("steady_state", 2),
+        ("sprint", 1)
+    ]
 }

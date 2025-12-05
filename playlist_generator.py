@@ -90,6 +90,5 @@ def main():
         song_name = track['name'][:42] + "..." if len(track['name']) > 45 else track['name']
         print(f"{track['state']:<15} {song_name:<45} {track['bpm']:<6} {track['duration']}")
 
-
 if __name__ == "__main__":
     main()
